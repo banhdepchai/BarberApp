@@ -40,6 +40,10 @@ public class Common {
     public static final String BARBER_KEY = "BARBER";
     public static final String TITLE_KEY = "title";
     public static final String CONTENT_KEY = "content";
+    public static final String SERVICES_ADDED = "SERVICES_ADDED";
+    public static final double DEFAULT_PRICE = 10000;
+    public static final String MONEY_SIGN = "VND";
+    public static final String SHOPPING_LIST = "SHOPPING_LIST_ITEMS";
     public static String state_name ="";
     public static Barber currentBarber;
     public static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd_MM_yyyy"); // only use this format
