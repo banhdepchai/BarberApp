@@ -25,6 +25,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.iid.FirebaseInstanceIdReceiver;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.MultiplePermissionsReport;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,43 +55,60 @@ public class MainActivity extends AppCompatActivity implements IOnAllStateLoadLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        FirebaseMessaging.getInstance().getToken()
-                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Common.updateToken(MainActivity.this, task.getResult());
-                        Log.d("MY_TOKEN", task.getResult());
+        Dexter.withActivity(this)
+                .withPermissions(new String[] {
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        android.Manifest.permission.CAMERA,
+                }).withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
+                        FirebaseMessaging.getInstance().getToken()
+                                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        Common.updateToken(MainActivity.this, task.getResult());
+                                        Log.d("MY_TOKEN", task.getResult());
+
+                                    }
+                                });
+
+                        Paper.init(MainActivity.this);
+                        String user = Paper.book().read(Common.LOGGED_KEY);
+                        if(TextUtils.isEmpty(user)) {
+                            setContentView(R.layout.activity_main);
+
+                            ButterKnife.bind(MainActivity.this);
+
+                            initView();
+
+                            init();
+
+                            loadAllStateFromFireStore();
+                        } else {
+                            // Auto login start
+                            Gson gson = new Gson();
+                            Common.state_name = Paper.book().read(Common.STATE_KEY);
+                            Common.selected_salon = gson.fromJson(Paper.book().read(Common.SALON_KEY, ""),
+                                    new TypeToken<Salon>(){}.getType());
+                            Common.currentBarber = gson.fromJson(Paper.book().read(Common.BARBER_KEY, ""),
+                                    new TypeToken<Barber>(){}.getType());
+
+                            Intent intent = new Intent(MainActivity.this, StaffHomeActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> list, PermissionToken permissionToken) {
 
                     }
-                });
+                }).check();
 
-        Paper.init(this);
-        String user = Paper.book().read(Common.LOGGED_KEY);
-        if(TextUtils.isEmpty(user)) {
-            setContentView(R.layout.activity_main);
 
-            ButterKnife.bind(this);
-
-            initView();
-
-            init();
-
-            loadAllStateFromFireStore();
-        } else {
-            // Auto login start
-            Gson gson = new Gson();
-            Common.state_name = Paper.book().read(Common.STATE_KEY);
-            Common.selected_salon = gson.fromJson(Paper.book().read(Common.SALON_KEY, ""),
-                    new TypeToken<Salon>(){}.getType());
-            Common.currentBarber = gson.fromJson(Paper.book().read(Common.BARBER_KEY, ""),
-                    new TypeToken<Barber>(){}.getType());
-
-            Intent intent = new Intent(this, StaffHomeActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
-        }
 
 
     }

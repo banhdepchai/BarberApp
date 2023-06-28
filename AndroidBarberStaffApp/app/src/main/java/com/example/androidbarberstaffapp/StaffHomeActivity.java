@@ -8,6 +8,7 @@ import static com.example.androidbarberstaffapp.Common.Common.simpleDateFormat;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.MenuItemCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -374,16 +375,17 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
 
     @Override
     public void onNotificationCountSuccess(int count) {
-        if(count == 0){
-            txt_notification_badge.setVisibility(View.INVISIBLE);
-        } else {
-            txt_notification_badge.setVisibility(View.VISIBLE);
-            if(count <= 9){
-                txt_notification_badge.setText(String.valueOf(count));
-            } else {
-                txt_notification_badge.setText("9+");
-            }
-        }
+//        if(count == 0){
+//            txt_notification_badge.setVisibility(View.INVISIBLE);
+//        } else {
+//
+//            txt_notification_badge.setVisibility(View.VISIBLE);
+//            if(count <= 9){
+//                txt_notification_badge.setText(String.valueOf(count));
+//            } else {
+//                txt_notification_badge.setText("9+");
+//            }
+//        }
     }
 
     @Override
