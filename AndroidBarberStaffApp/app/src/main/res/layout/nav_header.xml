@@ -15,4 +15,12 @@
         android:layout_marginTop="15dp"
         android:src="@drawable/logo" />
 
+    <TextView
+        android:id="@+id/txt_barber_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="000"
+        android:textSize="24sp"
+        android:textStyle="bold"/>
+
 </LinearLayout>

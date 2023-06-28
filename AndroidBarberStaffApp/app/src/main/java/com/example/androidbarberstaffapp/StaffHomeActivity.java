@@ -15,11 +15,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.androidbarberstaffapp.Adapter.MyTimeSlotAdapter;
 import com.example.androidbarberstaffapp.Common.Common;
+import com.example.androidbarberstaffapp.Common.Interface.INotificationCountListener;
 import com.example.androidbarberstaffapp.Common.Interface.ITimeSlotLoadListener;
 import com.example.androidbarberstaffapp.Common.SpacesItemDecoration;
 import com.example.androidbarberstaffapp.Model.TimeSlot;
@@ -29,7 +34,10 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.harrywhewell.scrolldatepicker.DayScrollDatePicker;
@@ -46,7 +54,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.paperdb.Paper;
 
-public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoadListener {
+public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoadListener, INotificationCountListener {
+
+    TextView txt_barber_name;
 
     @BindView(R.id.activity_main)
     DrawerLayout drawerLayout;
@@ -64,8 +74,19 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
     RecyclerView recycler_time_slot;
     @BindView(R.id.day_date_picker)
     DayScrollDatePicker calendarView;
-
     //==================================================END OF CODE FROM Barber Booking App (client app)==================================================
+
+    TextView txt_notification_badge;
+    CollectionReference notificationCollection;
+    CollectionReference currentBookDateCollection;
+
+    EventListener<QuerySnapshot> notificationEvent;
+    EventListener<QuerySnapshot> bookingEvent;
+
+    ListenerRegistration notificationListener;
+    ListenerRegistration bookingRealtimeListener;
+
+    INotificationCountListener iNotificationCountListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +124,10 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
                 return true;
             }
         });
+
+        View headerView = navigationView.getHeaderView(0);
+        txt_barber_name = (TextView)headerView.findViewById(R.id.txt_barber_name);
+        txt_barber_name.setText(Common.currentBarber.getName());
 
         // Copy from Barber Booking App (client app)
         alertDialog = new AlertDialog.Builder(this)
@@ -177,13 +202,7 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
         // Copy from Barber Booking App (client app)
         alertDialog.show();
 
-        barberDoc = FirebaseFirestore.getInstance()
-                .collection("AllSalon")
-                .document(Common.state_name)
-                .collection("Branch")
-                .document(Common.selected_salon.getSalonId())
-                .collection("Barber")
-                .document(barberId);
+        
 
         barberDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -233,6 +252,58 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
 
     private void init() {
         iTimeSlotLoadListener = this;
+        iNotificationCountListener = this;
+        initNotificationRealtimeUpdate();
+        initBookingRealtimeUpdate();
+    }
+
+    private void initBookingRealtimeUpdate() {
+        barberDoc = FirebaseFirestore.getInstance()
+                .collection("AllSalon")
+                .document(Common.state_name)
+                .collection("Branch")
+                .document(Common.selected_salon.getSalonId())
+                .collection("Barber")
+                .document(Common.currentBarber.getBarberId());
+
+        // Get current date
+        Calendar date = Calendar.getInstance();
+        date.add(Calendar.DATE, 0); // Add current date
+        bookingEvent = new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException error) {
+                loadAvailableTimeSlotOfBarber(Common.currentBarber.getBarberId(),
+                        Common.simpleDateFormat.format(date.getTime()));
+            }
+        };
+
+        currentBookDateCollection = barberDoc.collection(Common.simpleDateFormat.format(date.getTime()));
+
+        bookingRealtimeListener = currentBookDateCollection.addSnapshotListener(bookingEvent);
+    }
+
+    private void initNotificationRealtimeUpdate() {
+        // Copy from Barber Booking App (client app)
+        notificationCollection = FirebaseFirestore.getInstance()
+                .collection("AllSalon")
+                .document(Common.state_name)
+                .collection("Branch")
+                .document(Common.selected_salon.getSalonId())
+                .collection("Barber")
+                .document(Common.currentBarber.getBarberId())
+                .collection("Notifications");
+
+        notificationEvent = new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException error) {
+                if(queryDocumentSnapshots.size() > 0){
+                    loadNotification();
+                }
+            }
+        };
+
+        notificationListener = notificationCollection.whereEqualTo("read", false)
+                .addSnapshotListener(notificationEvent);
     }
 
     @Override
@@ -275,5 +346,73 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
         recycler_time_slot.setAdapter(adapter);
 
         alertDialog.dismiss();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.staff_home_menu, menu);
+        MenuItem menuItem = menu.findItem(R.id.action_new_notification);
+
+        txt_notification_badge = menuItem.getActionView().findViewById(R.id.notification_badge);
+
+        loadNotification();
+
+        menuItem.getActionView().setOnClickListener(view -> onOptionsItemSelected(menuItem));
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    private void loadNotification() {
+        notificationCollection.whereEqualTo("read", false)
+                .get()
+                .addOnFailureListener(e -> Toast.makeText(StaffHomeActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()){
+                        iNotificationCountListener.onNotificationCountSuccess(task.getResult().size());
+                    }
+                });
+    }
+
+    @Override
+    public void onNotificationCountSuccess(int count) {
+        if(count == 0){
+            txt_notification_badge.setVisibility(View.INVISIBLE);
+        } else {
+            txt_notification_badge.setVisibility(View.VISIBLE);
+            if(count <= 9){
+                txt_notification_badge.setText(String.valueOf(count));
+            } else {
+                txt_notification_badge.setText("9+");
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initBookingRealtimeUpdate();
+        initNotificationRealtimeUpdate();
+    }
+
+    @Override
+    protected void onStop() {
+        if (bookingRealtimeListener != null) {
+            bookingRealtimeListener.remove();
+        }
+        if (notificationListener != null) {
+            notificationListener.remove();
+        }
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (bookingRealtimeListener != null) {
+            bookingRealtimeListener.remove();
+        }
+        if (notificationListener != null) {
+            notificationListener.remove();
+        }
+        super.onDestroy();
     }
 }
