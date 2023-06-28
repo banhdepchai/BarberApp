@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,6 +13,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidBarberStaffApp"
         tools:targetApi="31">
+        <activity
+            android:name=".DoneServicesActivity"
+            android:exported="false" />
+
+        <service
+            android:name=".service.MyFCMService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".StaffHomeActivity"
             android:exported="false" />

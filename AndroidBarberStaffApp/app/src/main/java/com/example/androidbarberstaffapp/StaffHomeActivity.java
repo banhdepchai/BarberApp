@@ -16,7 +16,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -27,7 +26,7 @@ import com.example.androidbarberstaffapp.Common.Common;
 import com.example.androidbarberstaffapp.Common.Interface.INotificationCountListener;
 import com.example.androidbarberstaffapp.Common.Interface.ITimeSlotLoadListener;
 import com.example.androidbarberstaffapp.Common.SpacesItemDecoration;
-import com.example.androidbarberstaffapp.Model.TimeSlot;
+import com.example.androidbarberstaffapp.Model.BookingInformation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -230,9 +229,9 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
                                                 iTimeSlotLoadListener.onTimeSlotLoadEmpty();
                                             } else {
                                                 // If have appointment
-                                                List<TimeSlot> timeSlots = new ArrayList<>();
+                                                List<BookingInformation> timeSlots = new ArrayList<>();
                                                 for(QueryDocumentSnapshot document:task.getResult()){
-                                                    timeSlots.add(document.toObject(TimeSlot.class));
+                                                    timeSlots.add(document.toObject(BookingInformation.class));
                                                 }
                                                 iTimeSlotLoadListener.onTimeSlotLoadSuccess(timeSlots);
                                             }
@@ -326,7 +325,7 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
     }
 
     @Override
-    public void onTimeSlotLoadSuccess(List<TimeSlot> timeSlotList) {
+    public void onTimeSlotLoadSuccess(List<BookingInformation> timeSlotList) {
         // Copy from Barber Booking App (client app)
         MyTimeSlotAdapter adapter = new MyTimeSlotAdapter(this, timeSlotList);
         recycler_time_slot.setAdapter(adapter);

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.androidbarberstaffapp.Adapter.MyStateAdapter;
@@ -21,8 +22,11 @@ import com.google.common.reflect.TypeToken;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.iid.FirebaseInstanceIdReceiver;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +49,16 @@ public class MainActivity extends AppCompatActivity implements IOnAllStateLoadLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show())
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Common.updateToken(MainActivity.this, task.getResult());
+                        Log.d("MY_TOKEN", task.getResult());
+
+                    }
+                });
 
         Paper.init(this);
         String user = Paper.book().read(Common.LOGGED_KEY);
