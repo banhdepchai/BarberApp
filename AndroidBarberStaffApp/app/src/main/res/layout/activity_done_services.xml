@@ -107,8 +107,29 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
+            <RadioGroup
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/rdi_no_picture"
+                    android:text="No Picture"
+                    android:checked="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <RadioButton
+                    android:id="@+id/rdi_picture"
+                    android:text="Picture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </RadioGroup>
+
             <ImageView
                 android:id="@+id/img_customer_hair"
+                android:visibility="gone"
                 android:src="@drawable/baseline_image_24"
                 android:layout_width="150dp"
                 android:layout_height="150dp" />

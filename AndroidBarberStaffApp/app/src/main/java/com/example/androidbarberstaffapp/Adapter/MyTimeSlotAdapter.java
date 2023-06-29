@@ -52,6 +52,9 @@ public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.My
 
         IRecyclerItemSelectedListener iRecyclerItemSelectedListener;
 
+        public IRecyclerItemSelectedListener getiRecyclerItemSelectedListener() {
+            return iRecyclerItemSelectedListener;
+        }
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -117,15 +120,14 @@ public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.My
                 int slot = Integer.parseInt(slotValue.getSlot().toString());
                 if(slot == position) // If slot == position
                 {
-                    holder.card_time_slot.setTag(Common.DISABLE_TAG);
+                    if(!slotValue.isDone()) {
 
+                    holder.card_time_slot.setTag(Common.DISABLE_TAG);
                     holder.card_time_slot.setCardBackgroundColor(context.getResources().getColor(android.R.color.darker_gray));
 
                     holder.txt_time_slot_description.setText("Full");
-                    holder.txt_time_slot_description.setTextColor(context.getResources()
-                            .getColor(android.R.color.white));
-                    holder.txt_time_slot.setTextColor(context.getResources()
-                            .getColor(android.R.color.white));
+                    holder.txt_time_slot_description.setTextColor(context.getResources().getColor(android.R.color.white));
+                    holder.txt_time_slot.setTextColor(context.getResources().getColor(android.R.color.white));
                     holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
                         @Override
                         public void onItemSelectedListener(View view, int pos) {
@@ -146,7 +148,7 @@ public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.My
                                             if(task.getResult().exists()) // If have any booking information
                                             {
                                                 Common.currentBookingInformation = task.getResult().toObject(BookingInformation.class);
-//                                                Common.currentBookingInformation.setBookingId(task.getResult().getId());
+                                                Common.currentBookingInformation.setBookingId(task.getResult().getId());
                                                 context.startActivity(new Intent(context, DoneServicesActivity.class));
                                             }
                                         }
@@ -157,11 +159,53 @@ public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.My
                         }
                     });
                 }
+                    else {
+                        holder.card_time_slot.setTag(Common.DISABLE_TAG);
+                        holder.card_time_slot.setCardBackgroundColor(context.getResources().getColor(android.R.color.holo_orange_dark));
+
+                        holder.txt_time_slot_description.setText("Done");
+                        holder.txt_time_slot_description.setTextColor(context.getResources().getColor(android.R.color.white));
+                        holder.txt_time_slot.setTextColor(context.getResources().getColor(android.R.color.white));
+
+                        holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
+                            @Override
+                            public void onItemSelectedListener(View view, int pos) {
+                                // Only add for gray card
+//                                FirebaseFirestore.getInstance()
+//                                        .collection("AllSalon")
+//                                        .document(Common.state_name)
+//                                        .collection("Branch")
+//                                        .document(Common.selected_salon.getSalonId())
+//                                        .collection("Barber")
+//                                        .document(Common.currentBarber.getBarberId())
+//                                        .collection(Common.simpleDateFormat.format(Common.bookingDate.getTime()))
+//                                        .document(slotValue.getSlot().toString())
+//                                        .get()
+//                                        .addOnCompleteListener(task -> {
+//                                            if(task.isSuccessful())
+//                                            {
+//                                                if(task.getResult().exists()) // If have any booking information
+//                                                {
+//                                                    Common.currentBookingInformation = task.getResult().toObject(BookingInformation.class);
+//                                                    Common.currentBookingInformation.setBookingId(task.getResult().getId());
+//                                                    context.startActivity(new Intent(context, DoneServicesActivity.class));
+//                                                }
+//                                            }
+//                                        })
+//                                        .addOnFailureListener(e -> {
+//                                            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+//                                        });
+                            }
+                        });
+                    }
+                }
                 else {
-                    holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
-                        @Override
-                        public void onItemSelectedListener(View view, int pos) {
-                            // Loop all card in card list
+                    if(holder.getiRecyclerItemSelectedListener() == null)
+                    {
+                        holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
+                            @Override
+                            public void onItemSelectedListener(View view, int pos) {
+                                // Loop all card in card list
 //                            for(CardView cardView:cardViewList)
 //                            {
 //                                if(cardView.getTag() == null) // Only available card time slot be change
@@ -179,8 +223,9 @@ public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.My
 //                            intent.putExtra(Common.KEY_STEP,3); // Go to step 3
 //                            LocalBroadcastManager.getInstance(context)
 //                                    .sendBroadcast(intent);
-                        }
-                    });
+                            }
+                        });
+                    }
                 }
             }
         }

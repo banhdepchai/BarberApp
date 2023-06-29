@@ -105,6 +105,12 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
             return true;
         }
 
+        if(item.getItemId() == R.id.action_new_notification){
+            startActivity(new Intent(StaffHomeActivity.this, NotificationActivity.class));
+            txt_notification_badge.setText("");
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -375,17 +381,17 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
 
     @Override
     public void onNotificationCountSuccess(int count) {
-//        if(count == 0){
-//            txt_notification_badge.setVisibility(View.INVISIBLE);
-//        } else {
-//
-//            txt_notification_badge.setVisibility(View.VISIBLE);
-//            if(count <= 9){
-//                txt_notification_badge.setText(String.valueOf(count));
-//            } else {
-//                txt_notification_badge.setText("9+");
-//            }
-//        }
+        if(count == 0){
+            txt_notification_badge.setVisibility(View.INVISIBLE);
+        } else {
+
+            txt_notification_badge.setVisibility(View.VISIBLE);
+            if(count <= 9){
+                txt_notification_badge.setText(String.valueOf(count));
+            } else {
+                txt_notification_badge.setText("9+");
+            }
+        }
     }
 
     @Override

@@ -28,6 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Formatter;
+import java.util.Random;
 
 import io.paperdb.Paper;
 
@@ -39,11 +40,13 @@ public class Common {
     public static final String SALON_KEY = "SALON";
     public static final String BARBER_KEY = "BARBER";
     public static final String TITLE_KEY = "title";
-    public static final String CONTENT_KEY = "content";
+    public static final String CONTENT_KEY = "body";
     public static final String SERVICES_ADDED = "SERVICES_ADDED";
     public static final double DEFAULT_PRICE = 10000;
     public static final String MONEY_SIGN = "VND";
     public static final String SHOPPING_LIST = "SHOPPING_LIST_ITEMS";
+    public static final String IMAGE_DOWNLOADABLE_URL = "DOWNLOADABLE_URL";
+    public static final int MAX_NOTIFICATION_PER_LOAD = 10;
     public static String state_name ="";
     public static Barber currentBarber;
     public static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd_MM_yyyy"); // only use this format
@@ -99,39 +102,72 @@ public class Common {
         }
     }
 
-    public static void showNotification(Context context, int notification_id, String title, String content, Intent intent) {
+//    public static void showNotification(Context context, int notification_id, String title, String content, Intent intent) {
+//
+//        PendingIntent pendingIntent = null;
+//        if (intent != null)
+//            pendingIntent = PendingIntent.getActivity(context, notification_id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        String NOTIFICATION_CHANNEL_ID = "android_barber_staff_app_channel_01";
+//        NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
+//                    "Android Barber Staff App", NotificationManager.IMPORTANCE_DEFAULT);
+//
+//            notificationChannel.setDescription("Staff app");
+//            notificationChannel.enableLights(true);
+////            notificationChannel.setVibrationPattern(new long[]{0,1000,500,1000});
+//            notificationChannel.enableVibration(true);
+//
+//            notificationManager.createNotificationChannel(notificationChannel);
+//        }
+//
+//        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
+//        builder.setContentTitle(title)
+//                .setContentText(content)
+//                .setAutoCancel(false)
+//                .setSmallIcon(R.mipmap.ic_launcher_round)
+//                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round));
+//
+//        if (pendingIntent != null)
+//            builder.setContentIntent(pendingIntent);
+//        Notification notification = builder.build();
+//
+//        notificationManager.notify(notification_id, notification);
+//    }
 
+    public static void showNotification(Context context, int notification_id, String title, String body, Intent intent) {
         PendingIntent pendingIntent = null;
         if (intent != null)
             pendingIntent = PendingIntent.getActivity(context, notification_id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        String NOTIFICATION_CHANNEL_ID = "android_barber_staff_app_channel_01";
-        NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "Barber_App_Staff");
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
-                    "Android Barber Staff App", NotificationManager.IMPORTANCE_DEFAULT);
+        builder.setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setPriority(NotificationCompat.PRIORITY_MAX);
 
-            notificationChannel.setDescription("Staff app");
-            notificationChannel.enableLights(true);
-//            notificationChannel.setVibrationPattern(new long[]{0,1000,500,1000});
-            notificationChannel.enableVibration(true);
+//        NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
+//        bigTextStyle.bigText(title);
+//        bigTextStyle.setBigContentTitle(title);
+//        bigTextStyle.setSummaryText("title");
+//
+//        builder.setStyle(bigTextStyle);
 
-            notificationManager.createNotificationChannel(notificationChannel);
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String channelId = "barber.app.staff.channel.id";
+            NotificationChannel channel = new NotificationChannel(channelId, "Barber App Staff Channel", NotificationManager.IMPORTANCE_HIGH);
+            manager.createNotificationChannel(channel);
+            builder.setChannelId(channelId);
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
-        builder.setContentTitle(title)
-                .setContentText(content)
-                .setAutoCancel(false)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round));
-
-        if (pendingIntent != null)
-            builder.setContentIntent(pendingIntent);
         Notification notification = builder.build();
 
-        notificationManager.notify(notification_id, notification);
+        manager.notify(notification_id, notification);
+
     }
+
 
     public static String formatShoppingItemName(String name) {
         return name.length() > 13 ? new StringBuilder(name.substring(0, 10)).append("...").toString() : name;

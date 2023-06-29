@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+
     <uses-feature android:name="android.hardware.camera" />
 
     <application
@@ -20,7 +21,7 @@
         android:theme="@style/Theme.AndroidBarberStaffApp"
         tools:targetApi="31">
         <activity
-            android:name=".DoneServicesActivity"
+            android:name=".NotificationActivity"
             android:exported="false" />
 
         <service
@@ -31,6 +32,9 @@
             </intent-filter>
         </service>
 
+        <activity
+            android:name=".DoneServicesActivity"
+            android:exported="false" />
         <activity
             android:name=".StaffHomeActivity"
             android:exported="false" />
