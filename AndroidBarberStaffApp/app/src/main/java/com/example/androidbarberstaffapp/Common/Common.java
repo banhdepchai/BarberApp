@@ -47,6 +47,10 @@ public class Common {
     public static final String SHOPPING_LIST = "SHOPPING_LIST_ITEMS";
     public static final String IMAGE_DOWNLOADABLE_URL = "DOWNLOADABLE_URL";
     public static final int MAX_NOTIFICATION_PER_LOAD = 10;
+    public static final String RATING_STATE_KEY = "RATING_STATE";
+    public static final String RATING_SALON_ID = "RATING_SALON_ID";
+    public static final String RATING_SALON_NAME = "RATING_SALON_NAME";
+    public static final String RATING_BARBER_ID = "RATING_BARBER_ID";
     public static String state_name ="";
     public static Barber currentBarber;
     public static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd_MM_yyyy"); // only use this format
